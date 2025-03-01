@@ -1,14 +1,21 @@
 {% extends 'base.html' %}
 
 {% block content %}
+{% if messages %}   
+    {% for message in messages %}
+        <p>
+            {{ message }}
+        </p>
+    {% endfor %}
+{% endif %}
 <h2>Login</h2>
 <form method="post" action=>
     {% csrf_token %}
     <label for="username">Usuário:</label>
-    <input type="text" name="username" required>
+    <input type="text" name="username" required placeholder="admin">
     <br>
     <label for="password">Senha:</label>
-    <input type="password" name="password" required>
+    <input type="password" name="password" required placeholder="admin">
     <br>
     <button type="submit">Entrar</button>
 </form>
