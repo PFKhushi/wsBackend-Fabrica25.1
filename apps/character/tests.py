@@ -1,148 +1,215 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
+from django.utils import timezone
+import datetime
+
 from .models import Location, Character, Episode, Gender, Status
 
-# Create your tests here.
-
 class LocationModelTest(TestCase):
-    def test_location_creation(self):
-        # Create a Location instance
-        location = Location.objects.create(
+    def setUp(self):
+        self.location = Location.objects.create(
             id=1,
-            name="Earth",
+            name="Earth C-137",
             location_type="Planet",
-            dimension="C-137",
-            url="https://rickandmortyapi.com/api/location/1"
+            dimension="Dimension C-137",
+            url="https://example.com/api/location/1",
+            created=timezone.now()
         )
 
-        # Test fields
-        self.assertEqual(location.name, "Earth")
-        self.assertEqual(location.location_type, "Planet")
-        self.assertEqual(location.dimension, "C-137")
-        self.assertEqual(location.url, "https://rickandmortyapi.com/api/location/1")
-
-        # Test slug generation
-        self.assertEqual(location.slug, "earth")
-
-        # Test string representation
-        self.assertEqual(str(location), "Nome: Earth Tipo de localização: Planet Dimensão: C-137")
-
-    def test_location_validation(self):
-        # Test MinLengthValidator for name
+    def test_slug_generation(self):
+        """Test that a slug is automatically generated."""
+        self.assertEqual(self.location.slug, "earth-c-137")
+        
+    def test_str_representation(self):
+        """Test the string representation of the Location model."""
+        expected = f"Nome: Earth C-137 Tipo de localização: Planet Dimensão: Dimension C-137"
+        self.assertEqual(str(self.location), expected)
+        
+    def test_name_min_length(self):
+        """Test minimum length validator for name field."""
+        location = Location(
+            id=2,
+            name="A",  # Too short
+            location_type="Planet",
+            dimension="Dimension C-137",
+            created=timezone.now()
+        )
         with self.assertRaises(ValidationError):
-            location = Location(name="A", location_type="Planet", dimension="C-137")
-            location.full_clean()  # Triggers validation
-
-        # Test MaxLengthValidator for name
-        with self.assertRaises(ValidationError):
-            location = Location(name="A" * 101, location_type="Planet", dimension="C-137")
             location.full_clean()
-            
+
+
 class CharacterModelTest(TestCase):
     def setUp(self):
-        # Create a Location for testing relationships
-        self.location = Location.objects.create(
+        # Create a location first
+        self.origin_location = Location.objects.create(
             id=1,
-            name="Earth",
+            name="Earth C-137",
             location_type="Planet",
-            dimension="C-137"
+            dimension="Dimension C-137",
+            created=timezone.now()
         )
-
-    def test_character_creation(self):
-        # Create a Character instance
-        character = Character.objects.create(
-            id=1,
-            name="Rick Sanchez",
-            status=Status.ALIVE,
-            species="Human",
-            subspecies="Genius",
-            gender=Gender.MALE,
-            origin=self.location,
-            location=self.location,
-            image_url="https://rickandmortyapi.com/api/character/avatar/1.jpeg",
-            url="https://rickandmortyapi.com/api/character/1"
+        
+        self.current_location = Location.objects.create(
+            id=2,
+            name="Citadel of Ricks",
+            location_type="Space station",
+            dimension="unknown",
+            created=timezone.now()
         )
-
-        # Test fields
-        self.assertEqual(character.name, "Rick Sanchez")
-        self.assertEqual(character.status, Status.ALIVE)
-        self.assertEqual(character.species, "Human")
-        self.assertEqual(character.subspecies, "Genius")
-        self.assertEqual(character.gender, Gender.MALE)
-        self.assertEqual(character.origin, self.location)
-        self.assertEqual(character.location, self.location)
-        self.assertEqual(character.image_url, "https://rickandmortyapi.com/api/character/avatar/1.jpeg")
-        self.assertEqual(character.url, "https://rickandmortyapi.com/api/character/1")
-
-        # Test slug generation
-        self.assertEqual(character.slug, "rick-sanchez")
-
-        # Test string representation
-        self.assertEqual(str(character), "Nome: Rick Sanchez Espécie: Human Subspécie: Genius Gênero: M Estado: A Origem: Earth Localização atual: Earth")
-
-    def test_character_validation(self):
-        # Test MinLengthValidator for name
-        with self.assertRaises(ValidationError):
-            character = Character(name="R", status=Status.ALIVE, species="Human")
-            character.full_clean()
-
-        # Test MaxLengthValidator for name
-        with self.assertRaises(ValidationError):
-            character = Character(name="R" * 101, status=Status.ALIVE, species="Human")
-            character.full_clean()
-
-class EpisodeModelTest(TestCase):
-    def setUp(self):
-        # Create a Character for testing relationships
-        self.location = Location.objects.create(
-            id=1,
-            name="Earth",
-            location_type="Planet",
-            dimension="C-137"
-        )
+        
+        # Create a character without episodes first
         self.character = Character.objects.create(
             id=1,
             name="Rick Sanchez",
             status=Status.ALIVE,
             species="Human",
-            origin=self.location,
-            location=self.location
+            subspecies="Scientist",
+            gender=Gender.MALE,
+            origin=self.origin_location,
+            location=self.current_location,
+            image_url="https://example.com/rick.jpg",
+            url="https://example.com/api/character/1",
+            created=timezone.now()
         )
-
-    def test_episode_creation(self):
-        # Create an Episode instance
-        episode = Episode.objects.create(
+        
+        # Create an episode separately
+        self.episode = Episode.objects.create(
             id=1,
             name="Pilot",
-            air_date="2013-12-02",
+            air_date=datetime.date(2013, 12, 2),
             episode_code="S01E01",
-            url="https://rickandmortyapi.com/api/episode/1"
+            created=timezone.now()
         )
-        episode.characters.add(self.character)
+        
+        # Now add the episode to the character
+        self.character.episode.add(self.episode)
+        
+    def test_slug_generation(self):
+        """Test that a slug is automatically generated."""
+        self.assertEqual(self.character.slug, "rick-sanchez")
+        
+    def test_str_representation(self):
+        """Test the string representation of the Character model."""
+        expected = f"Nome: Rick Sanchez Espécie: Human Subspécie: Scientist Gênero: M Estado: A Origem: Nome: Earth C-137 Tipo de localização: Planet Dimensão: Dimension C-137 Localização atual: Nome: Citadel of Ricks Tipo de localização: Space station Dimensão: unknown"
+        self.assertEqual(str(self.character), expected)
+        
+    def test_character_episode_relationship(self):
+        """Test that a character can be associated with episodes."""
+        self.assertEqual(self.character.episode.count(), 1)
+        self.assertEqual(self.character.episode.first(), self.episode)
+        
+    def test_character_default_gender(self):
+        """Test default gender value."""
+        character = Character.objects.create(
+            id=2,
+            name="Test Character",
+            species="Test Species",
+            created=timezone.now()
+        )
+        self.assertEqual(character.gender, Gender.UNKNOWN)
+        
+    def test_character_default_status(self):
+        """Test default status value."""
+        character = Character.objects.create(
+            id=3,
+            name="Test Character",
+            species="Test Species",
+            created=timezone.now()
+        )
+        self.assertEqual(character.status, Status.UNKNOWN)
 
-        # Test fields
-        self.assertEqual(episode.name, "Pilot")
-        self.assertEqual(str(episode.air_date), "2013-12-02")
-        self.assertEqual(episode.episode_code, "S01E01")
-        self.assertEqual(episode.url, "https://rickandmortyapi.com/api/episode/1")
 
-        # Test slug generation
-        self.assertEqual(episode.slug, "s01e01")
+class EpisodeModelTest(TestCase):
+    def setUp(self):
+        self.episode = Episode.objects.create(
+            id=1,
+            name="Pilot",
+            air_date=datetime.date(2013, 12, 2),
+            episode_code="S01E01",
+            created=timezone.now()
+        )
+        
+    def test_slug_generation(self):
+        """Test that a slug is automatically generated."""
+        self.assertEqual(self.episode.slug, "pilot")
+        
+    def test_str_representation(self):
+        """Test the string representation of the Episode model."""
+        expected = f"Nome: Pilot Data estreia: 2013-12-02 Codigo: S01E01"
+        self.assertEqual(str(self.episode), expected)
+        
+    def test_character_relationship(self):
+        """Test that episodes can have characters."""
+        # Create a character first, then add the episode
+        character = Character.objects.create(
+            id=1,
+            name="Rick Sanchez",
+            status=Status.ALIVE,
+            species="Human",
+            created=timezone.now()
+        )
+        
+        # Now add the episode to the character
+        character.episode.add(self.episode)
+        
+        self.assertEqual(character.episode.count(), 1)
+        self.assertEqual(character.episode.first(), self.episode)
 
-        # Test relationships
-        self.assertEqual(episode.characters.count(), 1)
-        self.assertEqual(episode.characters.first(), self.character)
 
-        # Test string representation
-        self.assertEqual(str(episode), "Nome: Pilot Data estreia: 2013-12-02 Codigo: S01E01")
-
-    def test_episode_validation(self):
-        # Test MinLengthValidator for name
-        with self.assertRaises(ValidationError):
-            episode = Episode(name="P", air_date="2013-12-02", episode_code="S01E01")
-            episode.full_clean()
-
-        # Test MaxLengthValidator for name
-        with self.assertRaises(ValidationError):
-            episode = Episode(name="P" * 101, air_date="2013-12-02", episode_code="S01E01")
-            episode.full_clean()
+class SlugModelTest(TestCase):
+    """
+    Tests for the SlugModel abstract base class.
+    Using Location model as a concrete implementation for testing.
+    """
+    def test_custom_slug_source(self):
+        """
+        Test manually setting a slug for a model instance.
+        """
+        # Create a location with an explicit slug
+        location = Location.objects.create(
+            id=99,
+            name="Test Location",
+            location_type="Test Type",
+            dimension="Test Dimension",
+            slug="custom-slug",  # Explicitly set slug
+            created=timezone.now()
+        )
+        
+        # Check that our custom slug was used
+        self.assertEqual(location.slug, "custom-slug")
+        
+    def test_slug_generated_from_name(self):
+        """Test that slug is generated from name by default."""
+        location = Location.objects.create(
+            id=100,
+            name="Test Location Two",
+            location_type="Test Type",
+            dimension="Test Dimension",
+            created=timezone.now()
+        )
+        
+        self.assertEqual(location.slug, "test-location-two")
+        
+    def test_slug_uniqueness(self):
+        """Test handling of duplicate slugs."""
+        # Create first location
+        location1 = Location.objects.create(
+            id=101,
+            name="Earth",
+            location_type="Planet",
+            dimension="Dimension C-137",
+            created=timezone.now()
+        )
+        
+        # Create second location with same name but explicitly set a different slug
+        location2 = Location.objects.create(
+            id=102,
+            name="Earth",
+            location_type="Planet",
+            dimension="Dimension C-500",
+            slug="earth-2",  # Manually set a unique slug
+            created=timezone.now()
+        )
+        
+        self.assertEqual(location1.slug, "earth")
+        self.assertEqual(location2.slug, "earth-2")

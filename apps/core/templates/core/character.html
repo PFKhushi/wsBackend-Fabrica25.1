@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+{% for character in characters %}
+<div class="col-md-6">
+    <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+        <!-- Left Column with Character Info -->
+        <div class="col p-4 d-flex flex-column position-static">
+            <strong class="d-inline-block mb-2 text-primary-emphasis">Character</strong>
+            <h3 class="mb-0">{{ character.name }}</h3>
+            <div class="mb-1 text-body-secondary">{{ character.created|date:"Nov 12, Y" }}</div>
+            <p class="card-text mb-auto">
+                <strong>Species:</strong> {{ character.species }}<br>
+                <strong>Status:</strong> {{ character.status }}<br>
+                <strong>Gender:</strong> {{ character.get_gender_display }}<br>
+                <strong>Origin:</strong> {{ character.origin.name }}<br>
+                <strong>Location</strong>: {{ character.location.name }}<br>
+            
+                <div class="episode-container">
+                    {% for episode in character.episode.all %}
+                        <div class="episode">
+                            <p><strong>Episódio:</strong> {{ episode.name }}</p>
+                            <p><strong>Data de Estreia:</strong> {{ episode.air_date }}</p>
+                            <p><strong>Código do Episódio:</strong> {{ episode.episode_code }}</p>
+                        </div>
+                    {% empty %}
+                        <p>No episodes found for this character.</p>
+                    {% endfor %}
+                </div>
+            </p>
+        </div>
+
+        <!-- Right Column with Character Image -->
+        <div class="col-auto d-none d-lg-block">
+            {% if character.image_url %}
+                <img src="{{ character.image_url }}" alt="{{ character.name }}" class="bd-placeholder-img" width="200" height="250">
+            {% else %}
+                <svg class="bd-placeholder-img" width="200" height="250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false">
+                    <title>Placeholder</title>
+                    <rect width="100%" height="100%" fill="#55595c"></rect>
+                    <text x="50%" y="50%" fill="#eceeef" dy=".3em">Thumbnail</text>
+                </svg>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock  %}
+
+

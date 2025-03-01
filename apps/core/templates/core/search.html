@@ -1,0 +1,7 @@
+{% block body %}
+    <form action={% url "search" %} method="get">
+        <label for="character">Buscar Personagem:</label>
+        <input type="text" id="character" name="character">
+        <button type="submit">Pesquisar</button>
+    </form>
+{% endblock %}

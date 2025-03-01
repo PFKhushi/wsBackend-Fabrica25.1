@@ -1,0 +1,15 @@
+.episode-container {
+    max-height: 400px; /* Set the height to whatever you want */
+    overflow-y: auto;  /* Enables vertical scrolling if the content exceeds the container */
+    padding: 10px;     /* Optional: to add some space around the content */
+    border: 1px solid #ccc;  /* Optional: to add a border around the container */
+    background-color: #f9f9f9; /* Optional: background color */
+}
+
+.episode {
+    margin-bottom: 15px; /* Adds space between episodes */
+    padding: 10px;
+    background-color: #fff; /* Optional: background color for each episode */
+    border: 1px solid #ddd; /* Optional: adds a border to each episode */
+    border-radius: 5px; /* Optional: adds rounded corners */
+}

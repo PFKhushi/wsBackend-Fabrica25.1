@@ -1,6 +1,8 @@
 import os
 import django
 
+
+"""
 # Set the Django settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'RickNMortyDjango.settings')
 
@@ -14,3 +16,4 @@ utc = timezone.now()
 now = timezone.localtime()
 print(utc)
 print(now)
+"""

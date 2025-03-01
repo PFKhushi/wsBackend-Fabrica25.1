@@ -11,8 +11,18 @@ class SlugModel(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:  # Generate slug only if it's not set
-            source_value = getattr(self, "slug_source", 'name')
-            self.slug = slugify(source_value)  # Assumes `name` is the field to slugify
+            source_field = getattr(self, "slug_source", "name")
+            source_value = getattr(self, source_field)
+            base_slug = slugify(source_value)
+            slug = base_slug
+            counter = 1
+
+            # Ensure slug uniqueness
+            while self.__class__.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+
+            self.slug = slug
         super().save(*args, **kwargs)
 
 class Gender(models.TextChoices):
@@ -47,12 +57,6 @@ class Location(SlugModel, models.Model):
         validators=[MinLengthValidator(2), MaxLengthValidator(100)], 
         verbose_name="Dimensão da localização"
         ) # gets the location dimension type from the database | string
-    
-    #residents = models.OneToManyField( # Commented to avoid redundancy for now 
-    #    "Character", 
-    #    verbose_name="Residentes do local",
-    #    related_name="residents"
-    #    ) # gets a list of all the character that were last seen in it and stores the objects representing them | object
     
     url = models.URLField(
         verbose_name="URL da Localização", 
@@ -133,6 +137,8 @@ class Character(SlugModel, models.Model):
         "Episode",
         related_name="episode",
         verbose_name="Episodio onde personagem atua", 
+        blank=True,
+        null=True,
     ) # A character can appear in multiple episodes
     
     url = models.URLField(
@@ -162,14 +168,8 @@ class Episode(SlugModel, models.Model):
         verbose_name="Código do episodio",
         validators=[MinLengthValidator(2), MaxLengthValidator(100)]
         ) # gets the code from the episode | string
-    
-    characters = models.ManyToManyField( 
-        "Character", 
-        related_name="characters",
-        verbose_name="Personagens"
-        ) # gets a list of characters that aired on the episode | object
-    
-    url = models.URLField(
+
+    url = models.URLField( 
         verbose_name="URL do episodio", 
         blank=True, 
         null=True
