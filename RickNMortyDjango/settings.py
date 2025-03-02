@@ -85,8 +85,17 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+    },}
+    #'default': {
+#
+    #    'ENGINE': 'django.db.backends.postgresql',
+    #    'NAME': 'railway',
+    #    'USER': 'postgres',
+    #    'PASSWORD': 'FLNzqFhNlRBrcWvQsPBBKOPaqEXZRLep',
+    #    'HOST': 'containers-us-west-121.railway.app',  # Use public hostname from Railway
+    #    'PORT': '6824',  # Use public port from Railway
+    #}
+
 
 
 # Password validation
