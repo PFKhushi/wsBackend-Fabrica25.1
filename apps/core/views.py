@@ -1,8 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 import requests
 from apps.character import models as model
 from datetime import datetime
+from apps.user.models import ListChars
+from django.contrib.auth.models import User
 
 BASE_URL = "https://rickandmortyapi.com/api/"
 # Create your views here.
@@ -85,3 +87,18 @@ def get_episodes(urls):
     for url in urls:
         temp.append(get_episode(url))
     return temp
+
+#def save_character(request):
+#    if request.user.is_authenticated:
+#        id = 1 #request.GET.get('character.id')
+#        character = model.Character.objects.get(id=id)  # Get the character instance
+#        
+#        # Ensure the user has a ListChars entry or create one
+#        user_list, created = ListChars.objects.update_or_create(
+#            user=request.user,  # Set the user field
+#            defaults={'characters': character}  # Set or update character
+#        )
+#
+#        return redirect('index')  # Redirect after saving
+#
+#    return redirect('login')  # Redirect to login if not authenticated

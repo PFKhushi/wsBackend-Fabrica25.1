@@ -26,6 +26,13 @@
                         <p>No episodes found for this character.</p>
                     {% endfor %}
                 </div>
+                {% comment "" %}
+                <form method="POST" action="{% url 'save_character' character.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="save-character-btn">Save Character</button>
+                </form>
+                {% endcomment %}
+                
             </p>
         </div>
 
